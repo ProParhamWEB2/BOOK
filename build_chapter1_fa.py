@@ -572,8 +572,8 @@ def write_pdf():
     # PAGE 26
     p=Page(c,26,'شمارش همان حساب است')
     p.heading('نکتهٔ اضافه',14)
-    p.subheading('اِرنő روبیک (۱۹۴۴–اکنون) و مکعب جادویی او')
-    p.rtl('اِرنő روبیک مخترع، مجسمه‌ساز و استاد معماری بود که در بوداپستِ مجارستان زندگی می‌کرد. او در سال ۱۹۷۴ معمای کوچکی ساخت که بعدها صدها میلیون نسخه از آن فروخته شد. این معما در ابتدا «مکعب جادویی» نام داشت؛ اما وقتی در سال ۱۹۸۰ در سراسر جهان عرضه شد، با نام «مکعب روبیک» شناخته شد.')
+    p.subheading('اِرنو روبیک (۱۹۴۴–اکنون) و مکعب جادویی او')
+    p.rtl('اِرنو روبیک مخترع، مجسمه‌ساز و استاد معماری بود که در بوداپستِ مجارستان زندگی می‌کرد. او در سال ۱۹۷۴ معمای کوچکی ساخت که بعدها صدها میلیون نسخه از آن فروخته شد. این معما در ابتدا «مکعب جادویی» نام داشت؛ اما وقتی در سال ۱۹۸۰ در سراسر جهان عرضه شد، با نام «مکعب روبیک» شناخته شد.')
     cube(c,190,p.y-88,.9); p.y-=135; p.caption('شکل ۱٫۱۵: مکعب روبیک')
     p.rtl('خود مکعب در هر ضلع حدود ۲ اینچ طول دارد و به آرایه‌ای ۳×۳×۳ از ۲۷ مکعب کوچک‌تر تقسیم شده است. هر یک از ۶ وجه می‌تواند مستقل از وجه‌های دیگر بچرخد و آرایش رنگ‌ها را در سطح بیرونی مکعب بزرگ تغییر دهد. در آغاز، هر وجه یک‌رنگ است؛ اما چرخاندن وجه‌ها رنگ‌ها را درهم می‌آمیزد. برای نمونه، اگر از وضعیت آغازینِ شکل ۱٫۱۵ شروع کنیم و وجه بالایی (سفید) را ۹۰ درجه خلاف جهت عقربه‌های ساعت بچرخانیم، به وضعیت نشان‌داده‌شده در سمت راست می‌رسیم.')
     p.rtl('تعداد آرایش‌های متفاوت مکعب روبیک دقیقاً برابر است با ۴۳٬۲۵۲٬۰۰۳٬۲۷۴٬۴۸۹٬۸۵۶٬۰۰۰! شمردن این عدد بسیار دشوار است؛ برای کسانی که پیگیر جزئیات‌اند، این مقدار برابر است با ۸! × ۱۲! × ۳⁷ × ۲¹⁰. هدف معما این است که ابتدا مکعب را به آرایشی تصادفی درآوریم و سپس آن را به وضعیت آغازین برگردانیم؛ یعنی حالتی که هر وجه یک‌رنگ است.')
@@ -583,4 +583,49 @@ def write_pdf():
     p.finish()
     c.save()
 
-if __name__=='__main__': write_pdf()
+def finalize_source_figures():
+    """Replace the simplified illustrations with crops from the supplied PDF."""
+    import fitz, tempfile
+    from pathlib import Path
+    from PIL import Image, ImageDraw
+    root = Path(__file__).resolve().parent
+    scale = 2
+    with tempfile.TemporaryDirectory(prefix='chapter1-fa-') as td:
+        td = Path(td)
+        base = fitz.open(str(root / 'Chapter1-fa.pdf'))
+        source = fitz.open(str(root / 'Chapter1.pdf'))
+        for i in range(26):
+            pix = base[i].get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False)
+            Image.frombytes('RGB', (pix.width, pix.height), pix.samples).save(td / f'p{i+1:02}.png')
+            pix = source[i].get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False)
+            Image.frombytes('RGB', (pix.width, pix.height), pix.samples).save(td / f's{i+1:02}.png')
+
+        def paste_crop(page_no, crop, dest, cover):
+            page = Image.open(td / f'p{page_no:02}.png').convert('RGB')
+            original = Image.open(td / f's{page_no:02}.png').convert('RGB')
+            ImageDraw.Draw(page).rectangle(cover, fill='white')
+            image = original.crop(crop)
+            x0, y0, x1, y1 = dest
+            image = image.resize((x1-x0, y1-y0), Image.Resampling.LANCZOS)
+            page.paste(image, (x0, y0))
+            page.save(td / f'p{page_no:02}.png')
+
+        # Original illustrations, without the English captions; Persian captions stay in place.
+        paste_crop(26, (330, 480, 900, 735), (275, 325, 835, 545), (245, 300, 865, 565))
+        paste_crop(25, (415, 635, 700, 935), (250, 405, 650, 720), (235, 390, 665, 740))
+        # This crop contains only the mathematical labels and the original tree drawing.
+        paste_crop(14, (150, 120, 960, 420), (105, 145, 625, 340), (90, 125, 650, 355))
+
+        revised = root / 'Chapter1-fa-revised.pdf'
+        output = fitz.open()
+        for i in range(26):
+            page = output.new_page(width=557.28, height=719.04)
+            page.insert_image(page.rect, filename=str(td / f'p{i+1:02}.png'))
+        output.save(str(revised), deflate=True)
+        output.close()
+        base.close(); source.close()
+        revised.replace(root / 'Chapter1-fa.pdf')
+
+if __name__=='__main__':
+    write_pdf()
+    finalize_source_figures()

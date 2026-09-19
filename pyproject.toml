@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bookkit"
+version = "0.1.0"
+description = "Layout-aware toolkit for scanned book PDFs: Markdown, items, OCR QA and on-demand crops"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Arena Agent Mode" }]
+keywords = ["pdf", "ocr", "scanned-books", "markdown", "pymupdf", "layout"]
+dependencies = ["pymupdf>=1.24"]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+dev = ["pytest>=7", "ruff"]
+
+[project.scripts]
+bookkit = "bookkit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ProParhamWEB2/BOOK"
+
+[tool.setuptools]
+packages = ["bookkit"]
+
+[tool.setuptools.package-data]
+bookkit = ["web/*.html", "web/*.css", "web/*.js"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]

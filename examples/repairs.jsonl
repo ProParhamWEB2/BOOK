@@ -1,0 +1,6 @@
+{"page": 6, "line": 1, "before": "21 -2", "after": "", "reason": "glued fraction junk from OCR (verified against the page raster at 340 dpi)"}
+{"page": 6, "line": 2, "before": "3, 4월, 5, 50.... 26 277", "after": "3 2/3, 4 1/3, 5, 5 2/3, ..., 26 1/3, 27?", "reason": "mixed fractions were read as CJK glyphs; ink shows 3⅔, 4⅓, 5, 5⅔, …, 26⅓, 27?"}
+{"page": 6, "line": 3, "before": "3층", "after": "", "reason": "fraction bar fragments read as Hangul"}
+{"page": 4, "line": 33, "before": "미", "after": "", "reason": "OCRed symbol (end-of-solution box) has no correct text form"}
+{"page": 4, "line": 35, "before": "상", "after": "", "reason": "OCRed radiation symbol from the WARNING box"}
+{"page": 20, "line": 11, "before": "nx (n-1) x (n - 2) x...x )и -r+2) x (n - r+1)", "after": "n x (n-1) x (n-2) x ... x (n-r+2) x (n-r+1)", "reason": "verified against the crop: the product formula for P(n,r)"}

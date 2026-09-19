@@ -234,9 +234,8 @@ function renderText(){
     return `<div class="item"><span class="tag">${role} · p${par.page}</span>
             <div style="margin-top:4px">${escapeHtml(par.text)}</div></div>`;
   }).join('');
-  p.dataset.text = html;
-  if ($('.tab.on').dataset.tab === 'text') p.innerHTML = html;
   p.dataset.textHtml = html;
+  if ($('.tab.on').dataset.tab === 'text') p.innerHTML = html;
 }
 
 function renderItems(){
